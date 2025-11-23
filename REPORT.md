@@ -22,7 +22,7 @@ Interactivity: sidebar filters for tags, developers, inimum downloads, release y
 
 Data preprocessing, Bar Chart, Treemap Chart, Parallel Coordinates - Muhammet Göktuğ Canik
 
-Report Writing, Visualization design, Bubble, Sunburst, Heatmap  - Burak Alper Aslan
+Report Writing, Bubble, Sunburst, Heatmap  - Burak Alper Aslan
 
 Interactivity implementation, Line Chart, Icicle Chart, 3D Scatter   - Muzaffer Mut
 
