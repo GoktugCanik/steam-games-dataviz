@@ -32,47 +32,47 @@ Interactive Streamlit app for exploring a game store dataset using rich Plotly v
 - 3D scatter
 - Icicle
 
-###### Bar Graph (px.bar)
+###### Bar Graph
 
 * Technique: Bar chart
 * Insight: Shows the top games by estimated downloads. Useful to quickly see which games are the most popular.
 
-###### Treemap (px.treemap)
+###### Treemap
 
 * Technique: Treemap
 * Insight: Shows downloads hierarchy by developer → free/paid → game. Reveals which developers dominate, and how free vs paid games contribute to downloads.
 
-###### Parallel Coordinates (px.parallel_coordinates)
+###### Parallel Coordinates
 
 * Technique: Parallel coordinates
 * Insight: Compares numeric features (downloads, rating, price, length, difficulty) across multiple games. Highlights patterns and correlations among top games.
 
-###### Scatter/Bubble (px.scatter)
+###### Scatter/Bubble
 
 * Technique: Scatter plot with bubble size
 * Insight: Plots price vs rating, bubble size = downloads. Helps identify how price relates to rating and which games are highly downloaded.
 
-###### Sunburst (px.sunburst)
+###### Sunburst
 
 * Technique: Sunburst chart
 * Insight: Shows genre → developer → game with weighted downloads. Reveals which genres are most popular and which developers dominate top genres.
 
-###### Violin(px.imshow)
+###### Violin
 
 * Technique: Violin
 * Insight: Whether “All Ages” games tend to accumulate more downloads than “Teen 13+” or “Mature 17+”.
 
-###### Line Chart (px.line)
+###### Line Chart
 
 * Technique: Line chart
 * Insight: Shows total downloads per year. Useful to identify trends over time in game popularity.
 
-###### Icicle Chart (px.icicle)
+###### Icicle Chart
 
 * Technique: Icicle chart (hierarchical bar)
 * Insight: Shows hierarchy of age restriction → primary genre → game. Helps understand which age groups dominate which genres and top games within those.
 
-###### 3D Scatter (px.scatter_3d)
+###### 3D Scatter
 
 * Technique: 3D scatter plot
 * Insight: Plots difficulty, length, rating in 3D for top games. Helps see clusters of similar game profiles and differences in design complexity.
