@@ -18,15 +18,13 @@ Visualizations: treemap, sunburst, parallel coordinates, 3D scatter, heatmap, ic
 
 Interactivity: sidebar filters for tags, developers, inimum downloads, release year range, free-only, OS, languages; tooltips; zoom/pan; color highlighting.Scatter/Bubble
 
-## Key Insights (Illustrative)
+## Contribution
 
-Downloads and ratings: `rating` correlates with `estimated_downloads` up to mid-high ranges; extreme values may reflect niche titles.
+Data preprocessing, Bar Chart, Treemap Chart, Parallel Coordinates - Muhammet Göktuğ Canik
 
-Price and rating: moderate prices often cluster near mid-to-high ratings; very high prices can show polarized ratings.
+Report Writing, Visualization design, Bubble, Sunburst, Heatmap  - Burak Alper Aslan
 
-Tags and age groups: certain tags concentrate within specific age restrictions; stacked shares vary across developers.
-
-Platforms and languages: Windows support dominates; language distribution is skewed toward a few widely-supported languages.
+Interactivity implementation, Line Chart, Icicle Chart, 3D Scatter   - Muzaffer Mut
 
 ## Repository
 

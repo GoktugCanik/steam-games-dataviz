@@ -32,11 +32,17 @@ min_downloads = st.sidebar.number_input("Minimum Downloads", 0, int(data["estima
 year_range = st.sidebar.slider("Release Year Range", int(data["release_year"].min()), int(data["release_year"].max()), (int(data["release_year"].min()), int(data["release_year"].max())))
 developers = data["developer"].value_counts().index.tolist()
 selected_developers = st.sidebar.multiselect("Developers", options=developers, default=[])
+os = (data["supported_os"].dropna().str.replace(" ", "").str.split(",").explode().unique())
+os_options = sorted([o for o in os if o != ""]) 
+selected_os = st.sidebar.multiselect("Supported OS", options=os_options, default=[])
 free_only = st.sidebar.checkbox("Free Only", value=False)
 
 filtered = data.copy()  
 if selected_developers:
     filtered = filtered[filtered["developer"].isin(selected_developers)]
+if selected_os:
+    pattern = "|".join(selected_os)
+    filtered = filtered[filtered["supported_os"].fillna("").str.replace(" ", "").str.contains(pattern)]
 filtered = filtered[(filtered["estimated_downloads"] >= min_downloads)]
 filtered = filtered[(filtered["release_year"] >= year_range[0]) & (filtered["release_year"] <= year_range[1])]
 if free_only:
