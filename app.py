@@ -93,11 +93,14 @@ fig_scatter.update_traces(hovertemplate="Game Name: %{hovertext}<br>Price: %{x:.
 st.plotly_chart(fig_scatter, use_container_width=True)  
 
 # Sunburst Chart
-st.header("🌞 Sunburst: Release Year → Developer → Game Name")
-top_sun_data = filtered.copy()
-top_sun_data = filtered.sort_values("estimated_downloads", ascending=False).head(20).copy()
-top_sun_data["release_year"] = top_sun_data["release_year"].fillna(0).astype(int).astype(str)
-fig_sunburst = px.sunburst(top_sun_data, path=["release_year", "developer", "game_name"], values="estimated_downloads", color="rating", color_continuous_scale="RdBu", title="Sunburst by Release Year, Developer, and Game Name")
+st.header("🌞 Sunburst: Genre → Developer → Game")
+sb = filtered.sort_values("estimated_downloads", ascending=False).head(10).copy()
+sb["tags_list"] = sb["user_defined_tags"].astype(str).str.split(",")
+sb = sb.explode("tags_list")
+sb["tags_list"] = sb["tags_list"].str.strip()
+sb = sb[sb["tags_list"] != ""]
+sb["downloads_weight"] = sb["estimated_downloads"] / sb.groupby("game_name")["tags_list"].transform("count").replace(0, 1)
+fig_sunburst = px.sunburst(sb, path=["tags_list", "developer", "game_name"], values="downloads_weight", color="rating", color_continuous_scale="RdBu", title="Sunburst by Genre, Developer, and Game")
 st.plotly_chart(fig_sunburst, use_container_width=True)
 
 # Heatmap
@@ -113,19 +116,28 @@ fig_line = px.line(line_data, x="release_year", y="estimated_downloads", markers
 st.plotly_chart(fig_line, use_container_width=True)
 
 #Icicle Chart
-st.header("🌳 Icicle Chart: Downloads by Developer and Rating")
+st.header("🌳 Icicle: Age Restriction → Genre → Game")
+max_tags = st.slider("Max genres", 3, 30, 8)
+max_games = st.slider("Max games per genre", 3, 50, 10)
 icicle_data = filtered.copy()
-icicle_data["is_free_label"] = np.where(icicle_data["is_free"] == 0, "Paid", "Free")
-icicle_data = icicle_data.sort_values("estimated_downloads", ascending=False).head(20)
-
-fig_icicle = px.icicle(icicle_data, path=["developer", "is_free_label", "game_name"], values="estimated_downloads", 
-                                    color="rating", color_continuous_scale="Viridis", title="Downloads Hierarchy",
-                                    labels={"developer":"Developer","is_free_label":"Free","game_name":"Game"})
+icicle_data["primary_tag"] = icicle_data["user_defined_tags"].astype(str).str.split(",").str[0].str.strip()
+icicle_data["primary_tag"] = icicle_data["primary_tag"].replace({"": "Unknown"})
+icicle_data["age_val"] = pd.to_numeric(icicle_data["age_restriction"], errors="coerce").fillna(0).astype(int)
+icicle_data["age_label"] = icicle_data["age_val"].map({0: "All Ages", 13: "Teen 13+", 17: "Mature 17+"})
+icicle_data["age_label"] = icicle_data["age_label"].fillna(icicle_data["age_val"].astype(str))
+tag_downloads = icicle_data.groupby("primary_tag", as_index=False)["estimated_downloads"].sum().sort_values("estimated_downloads", ascending=False)
+top_tags = tag_downloads["primary_tag"].head(max_tags)
+icicle_data = icicle_data[icicle_data["primary_tag"].isin(top_tags)]
+icicle_data = icicle_data.sort_values(["primary_tag", "estimated_downloads"], ascending=False).groupby("primary_tag", as_index=False).head(max_games)
+icicle_view = icicle_data.sort_values("estimated_downloads", ascending=False)
+fig_icicle = px.icicle(icicle_view, path=["age_label", "primary_tag", "game_name"], values="estimated_downloads", color="rating", color_continuous_scale="Viridis", title=f"Icicle: Age → Genre → Game (Top {max_tags} genres, Top {max_games} games)")
 st.plotly_chart(fig_icicle, use_container_width=True)
 
-# 3D Scatter
-st.header("🧊 3D Scatter: Price, Rating, Length (Size=Reviews)")
-td_data = data[["price", "rating", "length", "all_reviews_number","estimated_downloads", "game_name", "developer"]].dropna()
-td_data = td_data.sort_values("estimated_downloads", ascending=False).head(200)
-fig_td = px.scatter_3d(td_data, x="price", y="rating", z="length", color="developer", size="all_reviews_number", hover_name="game_name", title="3D Scatter: Price vs Rating vs Length", template="plotly_white")
+# 3D Game Design Profile
+st.header("🧊 3D Game Design Profile: Difficulty vs Length vs Rating")
+td_data = data[["difficulty", "length", "rating", "game_name", "developer"]].dropna()
+td_data = td_data.sort_values("rating", ascending=False).head(200)
+fig_td = px.scatter_3d(td_data, x="difficulty", y="length", z="rating", color="developer",
+    hover_name="game_name", title="3D: Difficulty vs Length vs Rating", template="plotly_white",)
 st.plotly_chart(fig_td, width='stretch')
+
