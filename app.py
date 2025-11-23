@@ -48,7 +48,7 @@ filtered = filtered[(filtered["release_year"] >= year_range[0]) & (filtered["rel
 if free_only:
     filtered = filtered[filtered["price"] == 0]
 
-st.title("Steam Best Selling Games Data Visualization")
+st.title("Google Play Store Data Visualization")
 
 #Bar Graph
 st.header("📊 Games by Estimated Downloads")
@@ -103,6 +103,34 @@ sb["downloads_weight"] = sb["estimated_downloads"] / sb.groupby("game_name")["ta
 fig_sunburst = px.sunburst(sb, path=["tags_list", "developer", "game_name"], values="downloads_weight", color="rating", color_continuous_scale="RdBu", title="Sunburst by Genre, Developer, and Game")
 st.plotly_chart(fig_sunburst, use_container_width=True)
 
+# Sankey Diagram
+st.header("🔀 Sankey: Age → Genre → Price Type")
+sk_data = filtered.copy()
+sk_data["primary_tag"] = sk_data["user_defined_tags"].astype(str).str.split(",").str[0].str.strip()
+sk_data["primary_tag"] = sk_data["primary_tag"].replace({"": "Unknown"})
+sk_data["age_val"] = pd.to_numeric(sk_data["age_restriction"], errors="coerce").fillna(0).astype(int)
+sk_data["age_label"] = sk_data["age_val"].map({0: "All Ages", 13: "Teen 13+", 17: "Mature 17+"})
+sk_data["age_label"] = sk_data["age_label"].fillna(sk_data["age_val"].astype(str))
+sk_data["price_type"] = np.where(sk_data["price"].fillna(0) == 0, "Free", "Paid")
+sk_data = sk_data.dropna(subset=["estimated_downloads"])
+sk_top_tags = st.slider("Max genres (Sankey)", 3, 30, 8)
+sk_tag_downloads = sk_data.groupby("primary_tag", as_index=False)["estimated_downloads"].sum().sort_values("estimated_downloads", ascending=False)
+sk_top = sk_tag_downloads["primary_tag"].head(sk_top_tags)
+sk_data = sk_data[sk_data["primary_tag"].isin(sk_top)]
+flows_age_genre = sk_data.groupby(["age_label", "primary_tag"], as_index=False)["estimated_downloads"].sum()
+flows_genre_price = sk_data.groupby(["primary_tag", "price_type"], as_index=False)["estimated_downloads"].sum()
+age_nodes = flows_age_genre["age_label"].unique().tolist()
+genre_nodes = sk_top.tolist()
+price_nodes = ["Free", "Paid"]
+nodes = age_nodes + genre_nodes + price_nodes
+index_map = {name: i for i, name in enumerate(nodes)}
+source = [index_map[a] for a in flows_age_genre["age_label"]] + [index_map[g] for g in flows_genre_price["primary_tag"]]
+target = [index_map[g] for g in flows_age_genre["primary_tag"]] + [index_map[p] for p in flows_genre_price["price_type"]]
+value = flows_age_genre["estimated_downloads"].tolist() + flows_genre_price["estimated_downloads"].tolist()
+fig_sk = go.Figure(data=[go.Sankey(node=dict(pad=15, thickness=18, label=nodes), link=dict(source=source, target=target, value=value))])
+fig_sk.update_layout(title_text="Sankey: Age → Genre → Price Type", template="plotly_white")
+st.plotly_chart(fig_sk, use_container_width=True)
+
 # Violin
 st.header("🎻 Violin: Estimated Downloads by Age Restriction")
 vi_data = filtered.copy()
@@ -124,12 +152,6 @@ fig_vi = px.violin(
 )
 fig_vi.update_layout(xaxis=dict(categoryorder="array", categoryarray=order_vi))
 st.plotly_chart(fig_vi, use_container_width=True)
-
-# Line Chart
-st.header("📈 Downloads Per Year")
-line_data = filtered.groupby("release_year", as_index=False)["estimated_downloads"].sum()
-fig_line = px.line(line_data, x="release_year", y="estimated_downloads", markers=True, template="plotly_white", labels={"release_year": "Year", "estimated_downloads": "Downloads"}, title="Total Downloads per Year")
-st.plotly_chart(fig_line, use_container_width=True)
 
 #Icicle Chart
 st.header("🌳 Icicle: Age Restriction → Genre → Game")
@@ -156,4 +178,3 @@ td_data = td_data.sort_values("rating", ascending=False).head(200)
 fig_td = px.scatter_3d(td_data, x="difficulty", y="length", z="rating", color="developer",
     hover_name="game_name", title="3D: Difficulty vs Length vs Rating", template="plotly_white",)
 st.plotly_chart(fig_td, width='stretch')
-
