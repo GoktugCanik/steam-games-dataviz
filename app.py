@@ -10,16 +10,31 @@ st.set_page_config(page_title="Data Visualation of Best Selling Games on Steam",
 # Load Data
 def load_data():
     data = pd.read_csv("data/bestSelling_games.csv")
-    data["price"] = pd.to_numeric(data["price"], errors="coerce")
-    data["reviews_like_rate"] = pd.to_numeric(data["reviews_like_rate"], errors="coerce")
-    data["rating"] = pd.to_numeric(data["rating"], errors="coerce")
-    data["estimated_downloads"] = pd.to_numeric(data["estimated_downloads"], errors="coerce")
+    obj_cols = data.select_dtypes(include="object").columns
+    for c in obj_cols:
+        data[c] = data[c].str.strip()
+    data.replace("", np.nan, inplace=True)
+
+    num_cols = ["price","reviews_like_rate","rating","estimated_downloads","length","difficulty","age_restriction"]
+    for c in num_cols:
+        if c in data.columns:
+            data[c] = pd.to_numeric(data[c], errors="coerce")
+
     data["release_date"] = pd.to_datetime(data["release_date"], errors="coerce")
+
+    data = data.drop_duplicates(subset=["game_name","developer"])  
+    data = data.dropna(subset=["game_name","developer"])  
+
     data["user_defined_tags"] = data["user_defined_tags"].fillna("")
-    data = data.drop_duplicates(subset=["game_name","developer"]) 
-    release_year = data["release_date"].dt.year
-    data["release_year"] = release_year
-    data["is_free"] = (data["price"].fillna(0) == 0).astype(int)
+    data["price"] = data["price"].fillna(0)
+    fill_median_cols = ["reviews_like_rate","rating","estimated_downloads","length","difficulty","age_restriction"]
+    for c in fill_median_cols:
+        if c in data.columns:
+            med = data[c].median()
+            data[c] = data[c].fillna(med)
+
+    data["release_year"] = data["release_date"].dt.year
+    data["is_free"] = (data["price"] == 0).astype(int)
 
     return data
 
