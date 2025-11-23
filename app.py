@@ -48,7 +48,7 @@ filtered = filtered[(filtered["release_year"] >= year_range[0]) & (filtered["rel
 if free_only:
     filtered = filtered[filtered["price"] == 0]
 
-st.title("Google Play Store Data Visualization")
+st.title("Steam Best Selling Games Data Visualization")
 
 #Bar Graph
 st.header("📊 Games by Estimated Downloads")
